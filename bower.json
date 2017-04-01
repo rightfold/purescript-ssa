@@ -1,0 +1,12 @@
+{
+  "name": "purescript-ssa",
+  "dependencies": {
+    "purescript-lists": "^4.0.1",
+    "purescript-maps": "^3.0.0",
+    "purescript-maybe": "^3.0.0",
+    "purescript-prelude": "^3.0.0",
+    "purescript-tuples": "^4.0.0",
+    "purescript-foldable-traversable": "^3.0.0",
+    "purescript-sets": "^3.0.0"
+  }
+}
