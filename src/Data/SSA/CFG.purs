@@ -16,7 +16,7 @@ module Data.SSA.CFG
   ) where
 
 import Data.Foldable (find, findMap, fold, foldMap)
-import Data.List (List)
+import Data.List (List(Nil))
 import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
@@ -31,9 +31,11 @@ import Prelude
 --------------------------------------------------------------------------------
 
 -- | Basic block identifier.
-newtype BID = BID Int
-derive newtype instance eqBID  :: Eq  BID
-derive newtype instance ordBID :: Ord BID
+data BID
+  = EntryBID
+  | BID Int
+derive instance eqBID  :: Eq  BID
+derive instance ordBID :: Ord BID
 
 -- | Instruction identifier.
 newtype IID = IID Int
@@ -58,7 +60,7 @@ class I i where
 
 -- | The empty control flow graph.
 empty :: ∀ i. CFG i
-empty = CFG 0 0 Map.empty
+empty = CFG 0 0 $ Map.singleton EntryBID (B Nil)
 
 --------------------------------------------------------------------------------
 
