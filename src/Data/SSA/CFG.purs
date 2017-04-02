@@ -1,5 +1,5 @@
 module Data.SSA.CFG
-  ( BID
+  ( BID(EntryBID)
   , IID
 
   , CFG
