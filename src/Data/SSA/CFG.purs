@@ -13,19 +13,22 @@ module Data.SSA.CFG
   , usages
   , outgoing
   , incoming
+
+  , addB
+  , addI
   ) where
 
-import Data.Foldable (find, findMap, fold, foldMap)
+import Data.Foldable (any, find, findMap, fold, foldMap)
 import Data.List (List(Nil))
 import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..), isNothing)
 import Data.Newtype (class Newtype, unwrap)
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Tuple (fst, snd)
-import Data.Tuple.Nested (type (/\))
+import Data.Tuple.Nested (type (/\), (/\))
 import Prelude
 
 --------------------------------------------------------------------------------
@@ -93,3 +96,24 @@ outgoing = (foldMap (targets <<< snd) <<< _) <<< allIs
 incoming :: ∀ i. I i => BID -> CFG i -> Set BID
 incoming tgt cfg = filter (Set.member tgt <<< outgoing `flip` cfg) $ allBs cfg
   where filter f = Set.fromFoldable <<< List.filter f <<< Set.toUnfoldable
+
+--------------------------------------------------------------------------------
+
+-- | Add a new empty basic block to a control flow graph and return its
+-- | identifier.
+addB :: ∀ i. CFG i -> BID /\ CFG i
+addB (CFG nbid niid bs) =
+  BID nbid /\ CFG (nbid + 1) niid (Map.insert (BID nbid) (B Nil) bs)
+
+-- | Add an instruction to a control flow graph and return its identifier, or
+-- | `Nothing` if the basic block or any of the jump targets of operands do not
+-- | exist.
+addI :: ∀ i. I i => BID -> i -> CFG i -> Maybe (IID /\ CFG i)
+addI bid i cfg@(CFG nbid niid bs) =
+  (IID niid /\ _) <<< CFG nbid (niid + 1) <$> bs'
+  where
+  bs' | not (Map.member bid bs) = Nothing
+      | any (not <<< Map.member `flip` bs) (targets i) = Nothing
+      | any (isNothing <<< findI `flip` cfg) (operands i) = Nothing
+      | otherwise = Just $ Map.update (Just <<< snoc) bid bs
+  snoc (B b) = B $ List.snoc b (IID niid /\ i)
