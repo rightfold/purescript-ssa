@@ -1,6 +1,6 @@
 module Data.SSA.CFG
-  ( BID(EntryBID)
-  , IID
+  ( BID(..)
+  , IID(..)
 
   , CFG
   , class I, targets, operands
