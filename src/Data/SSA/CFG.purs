@@ -3,7 +3,6 @@ module Data.SSA.CFG
   , IID
 
   , CFG
-  , B
   , class I, targets, operands
 
   , empty
@@ -22,6 +21,7 @@ import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe)
+import Data.Newtype (class Newtype, unwrap)
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Tuple (fst, snd)
@@ -47,9 +47,7 @@ data CFG i = CFG Int Int (Map BID (B i))
 
 -- | Basic block.
 newtype B i = B (List (IID /\ i))
-
-unB :: ∀ i. B i -> List (IID /\ i)
-unB (B b) = b
+derive instance newtypeB :: Newtype (B i) _
 
 -- | Instruction.
 class I i where
@@ -70,12 +68,12 @@ allBs (CFG _ _ bs) = Set.fromFoldable $ Map.keys bs
 
 -- | The instruction with some identifier in a control flow graph.
 findI :: ∀ i. IID -> CFG i -> Maybe i
-findI iid (CFG _ _ bs) = snd <$> findMap (find (eq iid <<< fst) <<< unB) bs
+findI iid (CFG _ _ bs) = snd <$> findMap (find (eq iid <<< fst) <<< unwrap) bs
 
 -- | All instructions in the basic block with some identifier in a control flow
 -- | graph.
 allIs :: ∀ i. BID -> CFG i -> List (IID /\ i)
-allIs bid (CFG _ _ bs) = fold $ unB <$> Map.lookup bid bs
+allIs bid (CFG _ _ bs) = fold $ unwrap <$> Map.lookup bid bs
 
 -- | All instructions that use a particular instruction as an operand in a
 -- | control flow graph, in no particular order.
